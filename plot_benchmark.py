@@ -2,6 +2,7 @@ import json
 import matplotlib.pyplot as plt
 import numpy as np
 
+# read data
 names = []
 items = []
 item_sizes = []
@@ -9,6 +10,7 @@ items_per_s = []
 bytes_per_s = []
 with open("output.json") as file:
     data = json.load(file)
+    caches = [x for x in data['context']['caches'] if x['type'] != 'Instruction']
     benchmarks = data['benchmarks']
     for bm in benchmarks:
         names.append(bm['name'])
@@ -61,9 +63,8 @@ plt.loglog(bytes[l1_indices], bytes_per_s[l1_indices], 'r-+', label='list<1w>')
 plt.loglog(bytes[l8_indices], bytes_per_s[l8_indices], 'r-P', label='list<8w>')
 plt.loglog(bytes[l64_indices], bytes_per_s[l64_indices], 'r-x', label='list<64w>')
 plt.loglog(bytes[l512_indices], bytes_per_s[l512_indices], 'r-X', label='list<512w>')
-plt.axvline(x=32768, label="L1 Dcache", linestyle="--")
-plt.axvline(x=262144, label="L2 cache", linestyle="--")
-plt.axvline(x=2**24, label="L3 cache", linestyle="--")
+for cache in caches:
+    plt.axvline(x=cache['size'], label=f"L{cache['level']} {cache['type']} Cache", linestyle='--')
 plt.xlabel("bytes")
 plt.ylabel("bytes / s")
 plt.title("Performance Comparison Between Vector and List for Various Node Sizes")
